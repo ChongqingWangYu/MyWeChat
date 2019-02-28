@@ -14,13 +14,15 @@ import java.util.Arrays;
 import java.util.Map;
 
 /**
+ * 孤傲苍狼《微信开发学习总结》：https://www.cnblogs.com/xdp-gacl/p/5149171.html
+ *
  * @ClassName WxServlet
  * @Description 使用@WebServlet注解配置WxServlet,urlPatterns属性指明了WxServlet的访问路径
  * @Author ChongqingWangYu
  * @DateTime 2019/2/26 20:44
  * @GitHub https://github.com/ChongqingWangYu
  */
-@WebServlet(urlPatterns="/WxServlet")
+@WebServlet(urlPatterns = "/WxServlet")
 public class WxServlet extends HttpServlet {
     /**
      * Token可由开发者可以任意填写，用作生成签名（该Token会和接口URL中包含的Token进行比对，从而验证安全性）
@@ -40,16 +42,16 @@ public class WxServlet extends HttpServlet {
         System.out.println("请求进入");
         String result = "";
         try {
-            Map<String,String> map = MessageHandlerUtil.parseXml(request);
+            Map<String, String> map = MessageHandlerUtil.parseXml(request);
             System.out.println("开始构造消息");
-            result = MessageHandlerUtil.buildXml(map);
+            result = MessageHandlerUtil.buildResponseMessage(map);
             System.out.println(result);
-            if(result.equals("")){
+            if (result.equals("")) {
                 result = "未正确响应";
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("发生异常："+ e.getMessage());
+            System.out.println("发生异常：" + e.getMessage());
         }
         response.getWriter().println(result);
     }
@@ -81,7 +83,6 @@ public class WxServlet extends HttpServlet {
         } else {
             System.out.println("签名校验失败.");
         }
-
     }
 
     /**

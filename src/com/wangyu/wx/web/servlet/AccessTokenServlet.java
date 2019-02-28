@@ -2,6 +2,7 @@ package com.wangyu.wx.web.servlet;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.wangyu.wx.common.AccessTokenInfo;
 import com.wangyu.wx.entry.AccessToken;
 import com.wangyu.wx.util.NetWorkHelper;
@@ -10,6 +11,7 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
+import java.util.concurrent.*;
 
 /**
  * @ClassName AccessTokenServlet
@@ -35,9 +37,17 @@ public class AccessTokenServlet extends HttpServlet {
 
         final String appId = getInitParameter("appId");
         final String appSecret = getInitParameter("appSecret");
+        //线程池
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+                .setNameFormat("demo-pool-%d").build();
+        ExecutorService singleThreadPool = new ThreadPoolExecutor(1, 1,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(1024), namedThreadFactory, new ThreadPoolExecutor.AbortPolicy());
 
+        singleThreadPool.execute(()-> System.out.println(Thread.currentThread().getName()));
+        singleThreadPool.shutdown();
         //开启一个新的线程
-        new Thread(new Runnable() {
+        ((ThreadPoolExecutor) singleThreadPool).getThreadFactory().newThread(new Runnable() {
             @Override
             public void run() {
                 while (true) {
@@ -50,20 +60,20 @@ public class AccessTokenServlet extends HttpServlet {
                             Thread.sleep(7000 * 1000);
                             //Thread.sleep(10 * 1000);//10秒钟获取一次
                         } else {
-                            //获取失败
-                            Thread.sleep(1000 * 3); //获取的access_token为空 休眠3秒
+                            //获取失败,获取的access_token为空 休眠3秒
+                            Thread.sleep(1000 * 3);
                         }
                     } catch (Exception e) {
                         System.out.println("发生异常：" + e.getMessage());
                         e.printStackTrace();
                         try {
-                            Thread.sleep(1000 * 10); //发生异常休眠1秒
+                            //发生异常休眠1秒
+                            Thread.sleep(1000 * 10);
                         } catch (Exception e1) {
 
                         }
                     }
                 }
-
             }
         }).start();
     }
